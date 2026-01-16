@@ -52,23 +52,28 @@ button:hover { transform: scale(1.05); box-shadow: 0 0 15px #00f6ff; }
 .correct { background: #2ecc71; }
 .wrong { background: #e74c3c; }
 .default { background: #34495e; color:white; }
+#startBtn { background:#00f6ff; color:black; font-weight:bold; }
 </style>
 </head>
 <body>
 <div class="stars"></div>
 <div class="container">
     <h1>🚀 Kosmosa viktorīna</h1>
-    <div class="info">
-        <span>Punkti: <span id="score">0</span></span>
-        <span>⏱ <span id="time">10</span>s</span>
+    <div id="startScreen">
+        <button id="startBtn">Sākt spēli</button>
     </div>
-    <h2 id="question"></h2>
-    <div id="answers"></div>
-    <p id="message"></p>
-    <p id="best"></p>
+    <div id="gameScreen" style="display:none;">
+        <div class="info">
+            <span>Punkti: <span id="score">0</span></span>
+            <span>⏱ <span id="time">15</span>s</span>
+        </div>
+        <h2 id="question"></h2>
+        <div id="answers"></div>
+        <p id="message"></p>
+        <p id="best"></p>
+    </div>
 </div>
 
-<!-- Skaņu faili -->
 <audio id="sound-correct" src="correct.mp3"></audio>
 <audio id="sound-wrong" src="wrong.mp3"></audio>
 
@@ -77,18 +82,23 @@ const questions = [
     {q: "Kura planēta tiek saukta par Sarkano planētu?", a:["Zeme","Marss","Venēra","Jupiters"], correct:"Marss"},
     {q: "Kā sauc mūsu galaktiku?", a:["Andromeda","Piena Ceļš","Orions","Sombrero"], correct:"Piena Ceļš"},
     {q: "Kura ir lielākā planēta Saules sistēmā?", a:["Saturns","Neptūns","Jupiters","Urāns"], correct:"Jupiters"},
-    {q: "Kas ir Mēness?", a:["Planēta","Zvaigzne","Zemes pavadoņa objekts","Asteroīds"], correct:"Zemes pavadonis"},
+    {q: "Kas ir Mēness?", a:["Planēta","Zvaigzne","Zemes pavadonis","Asteroīds"], correct:"Zemes pavadonis"},
     {q: "Kas ir komētas?", a:["Lieli akmeņi orbītā","Ledus un putekļu ķermeņi, kas riņķo ap Sauli","Planētas","Zvaigznes"], correct:"Ledus un putekļu ķermeņi, kas riņķo ap Sauli"},
     {q: "Kas ir asteroīdu josla?", a:["Jupitera satelīti","Reģions starp Marsu un Jupitera, kur ir daudzi akmeņi","Saules vēji","Zemes atmosfēras daļa"], correct:"Reģions starp Marsu un Jupitera, kur ir daudzi akmeņi"},
-    {q: "Kas ir Polārzvaigzne?", a:["Vis spožākā zvaigzne debesīs","Zvaigzne, kas atrodas netālu no Zemes polārās ass pagrieziena punkta","Planēta","Mēness krāteris"], correct:"Zvaigzne, kas atrodas netālu no Zemes polārās ass pagrieziena punkta"},
+    {q: "Kas ir Polārzvaigzne?", a:["Visspožākā zvaigzne debesīs","Zvaigzne, kas atrodas netālu no Zemes polārās ass pagrieziena punkta","Planēta","Mēness krāteris"], correct:"Zvaigzne, kas atrodas netālu no Zemes polārās ass pagrieziena punkta"},
     {q: "Kas ir Saules ekliptika?", a:["Saules virsmas daļa","Zemes orbītas plakne, kā projekcija debesīs","Planētu virsmas līnija","Mēness fāzes"], correct:"Zemes orbītas plakne, kā projekcija debesīs"},
     {q: "Kas ir zvaigznājs?", a:["Grupa zvaigžņu debesīs, ko cilvēki saskata kā figūru","Atsevišķa zvaigzne","Planētu grupa","Saules sistēmas daļa"], correct:"Grupa zvaigžņu debesīs, ko cilvēki saskata kā figūru"},
-    {q: "Kas ir Lielais sarkanais plankums?", a:["Milzīgs vētras reģions uz Jupitera","Krāteris uz Mēness","Zemes kalnu virsotne","Saturna gāzu reģions"], correct:"Milzīgs vētras reģions uz Jupitera"}
+    {q: "Kas ir Lielais sarkanais plankums?", a:["Milzīgs vētras reģions uz Jupitera","Krāteris uz Mēness","Zemes kalnu virsotne","Saturna gāzu reģions"], correct:"Milzīgs vētras reģions uz Jupitera"},
+    // Jaunie jautājumi
+    {q: "Kas ir Saule?", a:["Planēta","Zvaigzne","Mēness","Komēta"], correct:"Zvaigzne"},
+    {q: "Kas ir Merkurs?", a:["Planēta","Zvaigzne","Asteroīds","Mēness"], correct:"Planēta"},
+    {q: "Kas ir Ziemeļblāzma?", a:["Aurora Borealis","Vulkāna izplūde","Saturna gāzes plankums","Komēta"], correct:"Aurora Borealis"},
+    {q: "Kas bija Galileo Galilejs?", a:["Astronoms un fiziķis","Planēta","Komēta","Zvaigzne"], correct:"Astronoms un fiziķis"}
 ];
 
 let index = 0;
 let score = 0;
-let timeLeft = 10;
+let timeLeft = 15;
 let timer;
 
 const bestScore = localStorage.getItem("bestScore") || 0;
@@ -98,7 +108,7 @@ const soundCorrect = document.getElementById("sound-correct");
 const soundWrong = document.getElementById("sound-wrong");
 
 function startTimer() {
-    timeLeft = 10;
+    timeLeft = 15;
     document.getElementById("time").textContent = timeLeft;
     timer = setInterval(() => {
         timeLeft--;
@@ -156,7 +166,12 @@ function endGame(){
     }
 }
 
-showQuestion();
+// Starta poga
+document.getElementById("startBtn").addEventListener("click", ()=>{
+    document.getElementById("startScreen").style.display="none";
+    document.getElementById("gameScreen").style.display="block";
+    showQuestion();
+});
 </script>
 </body>
 </html>
